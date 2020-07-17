@@ -16,5 +16,5 @@ class SkyFolkGame extends BaseGame {
   }
 
   @override
-  Color backgroundColor() => Palette.blue2;
+  Color backgroundColor() => Palette.blue1;
 }

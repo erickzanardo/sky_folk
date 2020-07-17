@@ -1,12 +1,12 @@
 import 'dart:ui';
 
-// Palette from: https://lospec.com/palette-list/pastel-vivid
+// Palette based on: https://lospec.com/palette-list/pastel-vivid
 
 class Palette {
   static const green1 = Color(0xffb9f261);
   static const green2 = Color(0xff99b851);
-  static const blue1 = Color(0xff61f2ca);
-  static const blue2 = Color(0xff51b892);
+  static const blue1 = Color(0xff41a6f6);
+  static const blue2 = Color(0xff3b5dc9);
   static const yellow1 = Color(0xfffae058);
   static const yellow2 = Color(0xffffbf54);
   static const red1 = Color(0xfff76865);
