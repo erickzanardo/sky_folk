@@ -1,8 +1,7 @@
-import 'package:flutter/animation.dart';
-
 import 'package:flame/components/component.dart';
 import 'package:flame/components/mixins/has_game_ref.dart';
-import 'package:flame/position.dart';
+
+import 'package:flame/time.dart';
 
 import 'package:tinycolor/tinycolor.dart';
 
@@ -11,6 +10,10 @@ import 'dart:math';
 
 import '../sky_folk_game.dart';
 import '../palette.dart';
+
+const CLOUD_SPEED = -5;
+const CLOUD_WIDTH = 100.0;
+const CLOUD_HEIGHT = 50.0;
 
 class Cloud {
   Rect rect;
@@ -38,6 +41,12 @@ class Cloud {
     canvas.drawRRect(rrect2, color2);
     canvas.drawRRect(rrect1, color1);
   }
+
+  void move(double ammount) {
+    final o = Offset(ammount, 0);
+    rrect1 = rrect1.shift(o);
+    rrect2 = rrect2.shift(o);
+  }
 }
 
 class CloudedSky extends Component with HasGameRef<SkyFolkGame> {
@@ -47,32 +56,36 @@ class CloudedSky extends Component with HasGameRef<SkyFolkGame> {
 
   List<Cloud> _clouds;
 
+  Timer _cloudCreator;
+
+  Random r = Random();
+
+  double _spaceAvailable;
+
   CloudedSky() {
     _color1 = Paint()..color = Palette.white;
     _color2 = Paint()..color = TinyColor(Palette.white).darken(10).color;
+
+    _cloudCreator = Timer((CLOUD_WIDTH / CLOUD_SPEED).abs(), repeat: true, callback: _spawnCloud)..start();
   }
 
   @override
   void onMount() {
+    _spaceAvailable = gameRef.size.height / 4;
     _generateInitialClouds();
   }
 
   void _generateInitialClouds() {
-    final cloudWidth = 100.0;
-    final cloudHeight = 50.0;
-    final cloudCount = (gameRef.size.width / cloudWidth).floor();
+    final cloudCount = (gameRef.size.width / CLOUD_WIDTH).floor();
 
-    Random r = Random();
-
-    final spaceAvailable = gameRef.size.height / 4;
 
     _clouds = List.generate(cloudCount, (i) {
       return Cloud(
           rect: Rect.fromLTWH(
-              (i * cloudWidth) - min(0.5, r.nextDouble()) * cloudWidth,
-              r.nextDouble() * spaceAvailable,
-              cloudWidth - 20,
-              cloudHeight,
+              (i * CLOUD_WIDTH) - min(0.5, r.nextDouble()) * CLOUD_WIDTH,
+              r.nextDouble() * _spaceAvailable,
+              CLOUD_WIDTH - 20,
+              CLOUD_HEIGHT,
           ),
           color1: _color1,
           color2: _color2,
@@ -80,8 +93,30 @@ class CloudedSky extends Component with HasGameRef<SkyFolkGame> {
     });
   }
 
+  void _spawnCloud() {
+    _clouds.add(Cloud(
+          rect: Rect.fromLTWH(
+              gameRef.size.width + CLOUD_WIDTH,
+              r.nextDouble() * _spaceAvailable,
+              CLOUD_WIDTH - 20,
+              CLOUD_HEIGHT,
+          ),
+          color1: _color1,
+          color2: _color2,
+      ),
+    );
+  }
+
   @override
   void update(double dt) {
+    _cloudCreator.update(dt);
+    _clouds.forEach((c) {
+      c.move(CLOUD_SPEED * dt);
+    });
+
+    _clouds.removeWhere((c) {
+      return c.rrect2.right < 0;
+    });
   }
 
   @override
